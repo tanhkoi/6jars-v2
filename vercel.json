@@ -1,18 +1,26 @@
 {
-  "buildCommand": "npm install",
-  "env": {
-    "MONGODB_URI": "@mongodb_uri"
-  },
-  "functions": {
-    "api/**/*.js": {
-      "memory": 1024,
-      "maxDuration": 30
-    }
-  },
-  "rewrites": [
+  "version": 2,
+  "builds": [
     {
-      "source": "/api/:path*",
-      "destination": "/api/:path*"
+      "src": "api/**/*.js",
+      "use": "@vercel/node"
+    },
+    {
+      "src": "frontend/index.html",
+      "use": "@vercel/static"
     }
-  ]
+  ],
+  "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "/api/$1"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/frontend/index.html"
+    }
+  ],
+  "env": {
+    "MONGODB_URI": "@MONGODB_URI"
+  }
 }

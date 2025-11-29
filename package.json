@@ -3,8 +3,13 @@
   "version": "1.0.0",
   "description": "Six Jars Budget Manager - Full Stack App on Vercel",
   "main": "index.js",
+  "engines": {
+    "node": "18.x"
+  },
   "scripts": {
-    "dev": "cd backend && npm run dev",
+    "dev": "vercel dev",
+    "build": "echo 'Build complete'",
+    "start": "echo 'Serverless functions deployed'",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
