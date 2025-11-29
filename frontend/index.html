@@ -2606,8 +2606,12 @@
     }
   <!-- Toast + components omitted in this trimmed demo. The script below integrates with the API. -->
 
-    // API settings — change if your backend runs elsewhere
-    const API_BASE = 'http://localhost:5000/api';
+    // API settings — automatically detect environment
+    // In development: http://localhost:5000/api
+    // In production (Vercel): /api (same domain)
+    const API_BASE = window.location.hostname === 'localhost' 
+      ? 'http://localhost:5000/api'
+      : '/api';
     const USER_ID = 'demo-user';
 
     // Fetch from backend and apply to local state (called on init)

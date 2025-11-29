@@ -1,0 +1,17 @@
+{
+  "name": "six-jars-app",
+  "version": "1.0.0",
+  "description": "Six Jars Budget Manager - Full Stack App on Vercel",
+  "main": "index.js",
+  "scripts": {
+    "dev": "cd backend && npm run dev",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "mongoose": "^7.5.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "express-validator": "^7.0.0"
+  }
+}
