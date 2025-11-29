@@ -1,0 +1,2689 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Six Jars Budget Manager - Frontend (API-enabled)">
+  <title>Six Jars Budget Manager (Frontend)</title>
+  <!-- <style>
+    /* Minimal styling — reuse original CSS if desired */
+    body { font-family: system-ui, sans-serif; margin: 1rem; }
+    pre { background:#f4f4f4; padding:1rem; }
+  </style> -->
+  <style>
+    /* ========================================================================
+       CSS CUSTOM PROPERTIES (THEME VARIABLES)
+       ======================================================================== */
+    :root {
+      /* Light theme colors */
+      --color-bg: #f8fafc;
+      --color-bg-secondary: #ffffff;
+      --color-bg-tertiary: #f1f5f9;
+      --color-text: #1e293b;
+      --color-text-secondary: #64748b;
+      --color-text-muted: #94a3b8;
+      --color-border: #e2e8f0;
+      --color-border-focus: #4f46e5;
+      --color-primary: #4f46e5;
+      --color-primary-hover: #4338ca;
+      --color-primary-light: #eef2ff;
+      --color-success: #10b981;
+      --color-success-light: #d1fae5;
+      --color-warning: #f59e0b;
+      --color-warning-light: #fef3c7;
+      --color-danger: #ef4444;
+      --color-danger-light: #fee2e2;
+      --color-shadow: rgba(0, 0, 0, 0.1);
+      --color-shadow-lg: rgba(0, 0, 0, 0.15);
+      
+      /* Jar-specific colors */
+      --jar-necessities: #3b82f6;
+      --jar-play: #ec4899;
+      --jar-education: #8b5cf6;
+      --jar-savings: #10b981;
+      --jar-give: #f59e0b;
+      --jar-invest: #06b6d4;
+      
+      /* Spacing */
+      --space-xs: 0.25rem;
+      --space-sm: 0.5rem;
+      --space-md: 1rem;
+      --space-lg: 1.5rem;
+      --space-xl: 2rem;
+      --space-2xl: 3rem;
+      
+      /* Border radius */
+      --radius-sm: 0.375rem;
+      --radius-md: 0.5rem;
+      --radius-lg: 0.75rem;
+      --radius-xl: 1rem;
+      --radius-full: 9999px;
+      
+      /* Transitions */
+      --transition-fast: 150ms ease;
+      --transition-normal: 250ms ease;
+      --transition-slow: 350ms ease;
+      
+      /* Font */
+      --font-sans: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      --font-mono: 'SF Mono', Monaco, 'Cascadia Code', monospace;
+    }
+    
+    /* Dark theme */
+    [data-theme="dark"] {
+      --color-bg: #0f172a;
+      --color-bg-secondary: #1e293b;
+      --color-bg-tertiary: #334155;
+      --color-text: #f1f5f9;
+      --color-text-secondary: #94a3b8;
+      --color-text-muted: #64748b;
+      --color-border: #334155;
+      --color-border-focus: #818cf8;
+      --color-primary: #818cf8;
+      --color-primary-hover: #a5b4fc;
+      --color-primary-light: #1e1b4b;
+      --color-success-light: #064e3b;
+      --color-warning-light: #78350f;
+      --color-danger-light: #7f1d1d;
+      --color-shadow: rgba(0, 0, 0, 0.3);
+      --color-shadow-lg: rgba(0, 0, 0, 0.4);
+    }
+    
+    /* ========================================================================
+       RESET & BASE STYLES
+       ======================================================================== */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    
+    html {
+      font-size: 16px;
+      scroll-behavior: smooth;
+    }
+    
+    body {
+      font-family: var(--font-sans);
+      background-color: var(--color-bg);
+      color: var(--color-text);
+      line-height: 1.6;
+      min-height: 100vh;
+      transition: background-color var(--transition-normal), color var(--transition-normal);
+    }
+    
+    /* Focus styles for accessibility */
+    :focus-visible {
+      outline: 2px solid var(--color-border-focus);
+      outline-offset: 2px;
+    }
+    
+    /* Skip link for accessibility */
+    .skip-link {
+      position: absolute;
+      top: -40px;
+      left: 0;
+      background: var(--color-primary);
+      color: white;
+      padding: var(--space-sm) var(--space-md);
+      z-index: 1000;
+      transition: top var(--transition-fast);
+    }
+    
+    .skip-link:focus {
+      top: 0;
+    }
+    
+    /* ========================================================================
+       LAYOUT
+       ======================================================================== */
+    .app-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: var(--space-md);
+    }
+    
+    @media (min-width: 768px) {
+      .app-container {
+        padding: var(--space-xl);
+      }
+    }
+    
+    /* ========================================================================
+       HEADER
+       ======================================================================== */
+    .app-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: var(--space-md);
+      margin-bottom: var(--space-xl);
+      padding-bottom: var(--space-lg);
+      border-bottom: 1px solid var(--color-border);
+    }
+    
+    .app-title {
+      display: flex;
+      align-items: center;
+      gap: var(--space-sm);
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--color-text);
+    }
+    
+    .app-title-icon {
+      font-size: 1.75rem;
+    }
+    
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: var(--space-sm);
+    }
+    
+    .total-balance {
+      background: var(--color-bg-tertiary);
+      padding: var(--space-sm) var(--space-md);
+      border-radius: var(--radius-md);
+      font-weight: 600;
+    }
+    
+    .total-balance-label {
+      font-size: 0.75rem;
+      color: var(--color-text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    
+    .total-balance-amount {
+      font-size: 1.25rem;
+      color: var(--color-success);
+    }
+    
+    /* Theme toggle */
+    .theme-toggle {
+      background: var(--color-bg-tertiary);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-full);
+      padding: var(--space-sm);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 40px;
+      height: 40px;
+      font-size: 1.25rem;
+      transition: background-color var(--transition-fast), transform var(--transition-fast);
+    }
+    
+    .theme-toggle:hover {
+      background: var(--color-border);
+      transform: scale(1.05);
+    }
+    
+    /* ========================================================================
+       BUTTONS
+       ======================================================================== */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: var(--space-sm);
+      padding: var(--space-sm) var(--space-md);
+      font-size: 0.875rem;
+      font-weight: 500;
+      border: none;
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      transition: all var(--transition-fast);
+      text-decoration: none;
+      white-space: nowrap;
+    }
+    
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    
+    .btn-primary {
+      background: var(--color-primary);
+      color: white;
+    }
+    
+    .btn-primary:hover:not(:disabled) {
+      background: var(--color-primary-hover);
+      transform: translateY(-1px);
+    }
+    
+    .btn-secondary {
+      background: var(--color-bg-tertiary);
+      color: var(--color-text);
+      border: 1px solid var(--color-border);
+    }
+    
+    .btn-secondary:hover:not(:disabled) {
+      background: var(--color-border);
+    }
+    
+    .btn-danger {
+      background: var(--color-danger);
+      color: white;
+    }
+    
+    .btn-danger:hover:not(:disabled) {
+      background: #dc2626;
+    }
+    
+    .btn-success {
+      background: var(--color-success);
+      color: white;
+    }
+    
+    .btn-success:hover:not(:disabled) {
+      background: #059669;
+    }
+    
+    .btn-sm {
+      padding: var(--space-xs) var(--space-sm);
+      font-size: 0.75rem;
+    }
+    
+    .btn-lg {
+      padding: var(--space-md) var(--space-lg);
+      font-size: 1rem;
+    }
+    
+    .btn-icon {
+      padding: var(--space-sm);
+      width: 36px;
+      height: 36px;
+    }
+    
+    /* ========================================================================
+       FORMS
+       ======================================================================== */
+    .form-group {
+      margin-bottom: var(--space-md);
+    }
+    
+    .form-label {
+      display: block;
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: var(--color-text-secondary);
+      margin-bottom: var(--space-xs);
+    }
+    
+    .form-input,
+    .form-select {
+      width: 100%;
+      padding: var(--space-sm) var(--space-md);
+      font-size: 1rem;
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+      background: var(--color-bg-secondary);
+      color: var(--color-text);
+      transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+    }
+    
+    .form-input:focus,
+    .form-select:focus {
+      border-color: var(--color-border-focus);
+      box-shadow: 0 0 0 3px var(--color-primary-light);
+    }
+    
+    .form-input::placeholder {
+      color: var(--color-text-muted);
+    }
+    
+    .form-input.error {
+      border-color: var(--color-danger);
+    }
+    
+    .form-error {
+      font-size: 0.75rem;
+      color: var(--color-danger);
+      margin-top: var(--space-xs);
+    }
+    
+    .form-row {
+      display: flex;
+      gap: var(--space-md);
+      flex-wrap: wrap;
+    }
+    
+    .form-row > * {
+      flex: 1;
+      min-width: 150px;
+    }
+    
+    /* ========================================================================
+       CARDS
+       ======================================================================== */
+    .card {
+      background: var(--color-bg-secondary);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      padding: var(--space-lg);
+      box-shadow: 0 1px 3px var(--color-shadow);
+      transition: box-shadow var(--transition-fast), transform var(--transition-fast);
+    }
+    
+    .card:hover {
+      box-shadow: 0 4px 12px var(--color-shadow-lg);
+    }
+    
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: var(--space-md);
+    }
+    
+    .card-title {
+      font-size: 1.125rem;
+      font-weight: 600;
+      color: var(--color-text);
+    }
+    
+    /* ========================================================================
+       TABS NAVIGATION
+       ======================================================================== */
+    .tabs {
+      display: flex;
+      gap: var(--space-xs);
+      background: var(--color-bg-tertiary);
+      padding: var(--space-xs);
+      border-radius: var(--radius-lg);
+      margin-bottom: var(--space-xl);
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+    
+    .tab-btn {
+      flex: 1;
+      min-width: max-content;
+      padding: var(--space-sm) var(--space-md);
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: var(--color-text-secondary);
+      background: transparent;
+      border: none;
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      transition: all var(--transition-fast);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: var(--space-xs);
+    }
+    
+    .tab-btn:hover {
+      color: var(--color-text);
+      background: var(--color-bg-secondary);
+    }
+    
+    .tab-btn.active {
+      color: var(--color-primary);
+      background: var(--color-bg-secondary);
+      box-shadow: 0 1px 3px var(--color-shadow);
+    }
+    
+    .tab-panel {
+      display: none;
+      animation: fadeIn var(--transition-normal);
+    }
+    
+    .tab-panel.active {
+      display: block;
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    /* ========================================================================
+       INCOME DISTRIBUTION SECTION
+       ======================================================================== */
+    .distribute-section {
+      margin-bottom: var(--space-xl);
+    }
+    
+    .distribute-card {
+      background: linear-gradient(135deg, var(--color-primary-light), var(--color-bg-secondary));
+    }
+    
+    .distribute-form {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-md);
+    }
+    
+    @media (min-width: 640px) {
+      .distribute-form {
+        flex-direction: row;
+        align-items: flex-end;
+      }
+      
+      .distribute-form .form-group {
+        margin-bottom: 0;
+        flex: 1;
+      }
+    }
+    
+    .distribute-toggle {
+      display: flex;
+      gap: var(--space-sm);
+      margin-bottom: var(--space-md);
+    }
+    
+    .distribute-toggle .btn {
+      flex: 1;
+    }
+    
+    .distribute-toggle .btn.active {
+      background: var(--color-primary);
+      color: white;
+    }
+    
+    .manual-distribution {
+      display: none;
+      margin-top: var(--space-md);
+    }
+    
+    .manual-distribution.active {
+      display: block;
+    }
+    
+    .manual-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: var(--space-md);
+    }
+    
+    .manual-jar-input {
+      display: flex;
+      align-items: center;
+      gap: var(--space-sm);
+    }
+    
+    .manual-jar-input .jar-icon {
+      font-size: 1.25rem;
+    }
+    
+    .manual-jar-input input {
+      flex: 1;
+    }
+    
+    /* ========================================================================
+       JARS GRID
+       ======================================================================== */
+    .jars-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: var(--space-lg);
+      margin-bottom: var(--space-xl);
+    }
+    
+    .jar-card {
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .jar-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: var(--jar-color);
+    }
+    
+    .jar-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: var(--space-md);
+    }
+    
+    .jar-info {
+      display: flex;
+      align-items: center;
+      gap: var(--space-sm);
+    }
+    
+    .jar-icon {
+      font-size: 2rem;
+      line-height: 1;
+    }
+    
+    .jar-name {
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--color-text);
+    }
+    
+    .jar-percentage {
+      display: flex;
+      align-items: center;
+      gap: var(--space-xs);
+      background: var(--color-bg-tertiary);
+      padding: var(--space-xs) var(--space-sm);
+      border-radius: var(--radius-md);
+      font-size: 0.875rem;
+      font-weight: 500;
+    }
+    
+    .jar-percentage input {
+      width: 40px;
+      padding: 2px 4px;
+      text-align: center;
+      border: 1px solid transparent;
+      border-radius: var(--radius-sm);
+      background: transparent;
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: var(--color-text);
+    }
+    
+    .jar-percentage input:focus {
+      border-color: var(--color-border-focus);
+      background: var(--color-bg-secondary);
+    }
+    
+    .jar-balance {
+      margin-bottom: var(--space-md);
+    }
+    
+    .jar-balance-label {
+      font-size: 0.75rem;
+      color: var(--color-text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    
+    .jar-balance-amount {
+      font-size: 1.75rem;
+      font-weight: 700;
+      color: var(--jar-color);
+      font-family: var(--font-mono);
+    }
+    
+    /* Progress bar */
+    .jar-progress {
+      margin-bottom: var(--space-md);
+    }
+    
+    .progress-bar {
+      height: 8px;
+      background: var(--color-bg-tertiary);
+      border-radius: var(--radius-full);
+      overflow: hidden;
+    }
+    
+    .progress-fill {
+      height: 100%;
+      background: var(--jar-color);
+      border-radius: var(--radius-full);
+      transition: width var(--transition-slow);
+      position: relative;
+    }
+    
+    .progress-fill::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+      animation: shimmer 2s infinite;
+    }
+    
+    @keyframes shimmer {
+      0% { transform: translateX(-100%); }
+      100% { transform: translateX(100%); }
+    }
+    
+    .progress-text {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.75rem;
+      color: var(--color-text-secondary);
+      margin-top: var(--space-xs);
+    }
+    
+    /* Jar actions */
+    .jar-actions {
+      display: flex;
+      gap: var(--space-sm);
+      flex-wrap: wrap;
+    }
+    
+    .jar-actions .btn {
+      flex: 1;
+      min-width: 70px;
+    }
+    
+    /* ========================================================================
+       MODALS
+       ======================================================================== */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: var(--space-md);
+      z-index: 1000;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity var(--transition-normal), visibility var(--transition-normal);
+    }
+    
+    .modal-overlay.active {
+      opacity: 1;
+      visibility: visible;
+    }
+    
+    .modal {
+      background: var(--color-bg-secondary);
+      border-radius: var(--radius-xl);
+      width: 100%;
+      max-width: 500px;
+      max-height: 90vh;
+      overflow-y: auto;
+      transform: scale(0.9);
+      transition: transform var(--transition-normal);
+    }
+    
+    .modal-overlay.active .modal {
+      transform: scale(1);
+    }
+    
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: var(--space-lg);
+      border-bottom: 1px solid var(--color-border);
+    }
+    
+    .modal-title {
+      font-size: 1.25rem;
+      font-weight: 600;
+    }
+    
+    .modal-close {
+      background: none;
+      border: none;
+      font-size: 1.5rem;
+      color: var(--color-text-secondary);
+      cursor: pointer;
+      padding: var(--space-xs);
+      line-height: 1;
+      transition: color var(--transition-fast);
+    }
+    
+    .modal-close:hover {
+      color: var(--color-text);
+    }
+    
+    .modal-body {
+      padding: var(--space-lg);
+    }
+    
+    .modal-footer {
+      display: flex;
+      justify-content: flex-end;
+      gap: var(--space-sm);
+      padding: var(--space-lg);
+      border-top: 1px solid var(--color-border);
+    }
+    
+    /* ========================================================================
+       HISTORY / LEDGER
+       ======================================================================== */
+    .history-filters {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-md);
+      margin-bottom: var(--space-lg);
+      padding: var(--space-md);
+      background: var(--color-bg-tertiary);
+      border-radius: var(--radius-lg);
+    }
+    
+    .history-filters .form-group {
+      margin-bottom: 0;
+      min-width: 150px;
+    }
+    
+    .transaction-list {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-sm);
+    }
+    
+    .transaction-item {
+      display: flex;
+      align-items: center;
+      gap: var(--space-md);
+      padding: var(--space-md);
+      background: var(--color-bg-secondary);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+      transition: background-color var(--transition-fast);
+    }
+    
+    .transaction-item:hover {
+      background: var(--color-bg-tertiary);
+    }
+    
+    .transaction-icon {
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: var(--radius-full);
+      font-size: 1.25rem;
+      flex-shrink: 0;
+    }
+    
+    .transaction-icon.deposit {
+      background: var(--color-success-light);
+    }
+    
+    .transaction-icon.withdraw {
+      background: var(--color-danger-light);
+    }
+    
+    .transaction-icon.transfer {
+      background: var(--color-warning-light);
+    }
+    
+    .transaction-details {
+      flex: 1;
+      min-width: 0;
+    }
+    
+    .transaction-type {
+      font-weight: 500;
+      color: var(--color-text);
+    }
+    
+    .transaction-jar {
+      font-size: 0.875rem;
+      color: var(--color-text-secondary);
+    }
+    
+    .transaction-note {
+      font-size: 0.75rem;
+      color: var(--color-text-muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    
+    .transaction-meta {
+      text-align: right;
+      flex-shrink: 0;
+    }
+    
+    .transaction-amount {
+      font-weight: 600;
+      font-family: var(--font-mono);
+    }
+    
+    .transaction-amount.positive {
+      color: var(--color-success);
+    }
+    
+    .transaction-amount.negative {
+      color: var(--color-danger);
+    }
+    
+    .transaction-date {
+      font-size: 0.75rem;
+      color: var(--color-text-muted);
+    }
+    
+    .empty-state {
+      text-align: center;
+      padding: var(--space-2xl);
+      color: var(--color-text-secondary);
+    }
+    
+    .empty-state-icon {
+      font-size: 3rem;
+      margin-bottom: var(--space-md);
+      opacity: 0.5;
+    }
+    
+    /* ========================================================================
+       SETTINGS
+       ======================================================================== */
+    .settings-section {
+      margin-bottom: var(--space-xl);
+    }
+    
+    .settings-section h3 {
+      font-size: 1rem;
+      font-weight: 600;
+      margin-bottom: var(--space-md);
+      padding-bottom: var(--space-sm);
+      border-bottom: 1px solid var(--color-border);
+    }
+    
+    .percentage-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: var(--space-md);
+      margin-bottom: var(--space-md);
+    }
+    
+    .percentage-item {
+      display: flex;
+      align-items: center;
+      gap: var(--space-sm);
+    }
+    
+    .percentage-item .jar-icon {
+      font-size: 1.5rem;
+    }
+    
+    .percentage-item input {
+      width: 60px;
+    }
+    
+    .percentage-total {
+      display: flex;
+      align-items: center;
+      gap: var(--space-sm);
+      padding: var(--space-md);
+      border-radius: var(--radius-md);
+      font-weight: 500;
+    }
+    
+    .percentage-total.valid {
+      background: var(--color-success-light);
+      color: var(--color-success);
+    }
+    
+    .percentage-total.invalid {
+      background: var(--color-danger-light);
+      color: var(--color-danger);
+    }
+    
+    .settings-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-md);
+    }
+    
+    /* ========================================================================
+       CHART (OPTIONAL CANVAS)
+       ======================================================================== */
+    .chart-container {
+      margin-bottom: var(--space-xl);
+    }
+    
+    .chart-wrapper {
+      position: relative;
+      height: 200px;
+      display: flex;
+      align-items: flex-end;
+      gap: var(--space-sm);
+      padding: var(--space-md);
+      background: var(--color-bg-secondary);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+    }
+    
+    .chart-bar-container {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      height: 100%;
+    }
+    
+    .chart-bar {
+      width: 100%;
+      max-width: 60px;
+      border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+      transition: height var(--transition-slow);
+      position: relative;
+    }
+    
+    .chart-bar-label {
+      font-size: 0.625rem;
+      color: var(--color-text-secondary);
+      text-align: center;
+      margin-top: var(--space-xs);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 100%;
+    }
+    
+    .chart-bar-value {
+      position: absolute;
+      bottom: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 0.625rem;
+      font-weight: 600;
+      color: var(--color-text);
+      white-space: nowrap;
+      margin-bottom: 2px;
+    }
+    
+    /* ========================================================================
+       TOAST NOTIFICATIONS
+       ======================================================================== */
+    .toast-container {
+      position: fixed;
+      bottom: var(--space-lg);
+      right: var(--space-lg);
+      z-index: 1100;
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-sm);
+    }
+    
+    .toast {
+      display: flex;
+      align-items: center;
+      gap: var(--space-sm);
+      padding: var(--space-md);
+      background: var(--color-bg-secondary);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+      box-shadow: 0 4px 12px var(--color-shadow-lg);
+      animation: slideIn var(--transition-normal);
+      max-width: 350px;
+    }
+    
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateX(100%);
+      }
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+    
+    .toast.success {
+      border-left: 4px solid var(--color-success);
+    }
+    
+    .toast.error {
+      border-left: 4px solid var(--color-danger);
+    }
+    
+    .toast.warning {
+      border-left: 4px solid var(--color-warning);
+    }
+    
+    .toast-icon {
+      font-size: 1.25rem;
+    }
+    
+    .toast-message {
+      flex: 1;
+      font-size: 0.875rem;
+    }
+    
+    .toast-close {
+      background: none;
+      border: none;
+      color: var(--color-text-muted);
+      cursor: pointer;
+      padding: var(--space-xs);
+      font-size: 1rem;
+    }
+    
+    /* ========================================================================
+       RESPONSIVE ADJUSTMENTS
+       ======================================================================== */
+    @media (max-width: 640px) {
+      .app-title {
+        font-size: 1.25rem;
+      }
+      
+      .jars-grid {
+        grid-template-columns: 1fr;
+      }
+      
+      .jar-balance-amount {
+        font-size: 1.5rem;
+      }
+      
+      .modal {
+        max-height: 100vh;
+        border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+        margin-top: auto;
+      }
+      
+      .toast-container {
+        left: var(--space-md);
+        right: var(--space-md);
+        bottom: var(--space-md);
+      }
+      
+      .toast {
+        max-width: 100%;
+      }
+    }
+    
+    /* ========================================================================
+       UTILITY CLASSES
+       ======================================================================== */
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+    
+    .text-center {
+      text-align: center;
+    }
+    
+    .mb-md {
+      margin-bottom: var(--space-md);
+    }
+    
+    .mt-md {
+      margin-top: var(--space-md);
+    }
+  </style>
+</head>
+<body>
+  <!-- For brevity: the full UI was copied from the original file in your desktop. -->
+  <!-- Skip link for keyboard navigation -->
+  <a href="#main-content" class="skip-link">Skip to main content</a>
+  
+  <div class="app-container">
+    <!-- Header -->
+    <header class="app-header">
+      <h1 class="app-title">
+        <span class="app-title-icon" aria-hidden="true">🏺</span>
+        Six Jars Budget
+      </h1>
+      <div class="header-actions">
+        <div class="total-balance" aria-live="polite">
+          <div class="total-balance-label">Total Balance</div>
+          <div class="total-balance-amount" id="total-balance">$0.00</div>
+        </div>
+        <button 
+          class="theme-toggle" 
+          id="theme-toggle"
+          aria-label="Toggle dark mode"
+          title="Toggle dark/light theme"
+        >
+          <span id="theme-icon">🌙</span>
+        </button>
+      </div>
+    </header>
+    
+    <!-- Main content -->
+    <main id="main-content">
+      <!-- Tab navigation -->
+      <nav class="tabs" role="tablist" aria-label="Main sections">
+        <button 
+          class="tab-btn active" 
+          role="tab"
+          aria-selected="true"
+          aria-controls="panel-dashboard"
+          id="tab-dashboard"
+          data-tab="dashboard"
+        >
+          <span aria-hidden="true">📊</span>
+          Dashboard
+        </button>
+        <button 
+          class="tab-btn" 
+          role="tab"
+          aria-selected="false"
+          aria-controls="panel-history"
+          id="tab-history"
+          data-tab="history"
+        >
+          <span aria-hidden="true">📜</span>
+          History
+        </button>
+        <button 
+          class="tab-btn" 
+          role="tab"
+          aria-selected="false"
+          aria-controls="panel-settings"
+          id="tab-settings"
+          data-tab="settings"
+        >
+          <span aria-hidden="true">⚙️</span>
+          Settings
+        </button>
+      </nav>
+      
+      <!-- Dashboard Panel -->
+      <section 
+        class="tab-panel active" 
+        id="panel-dashboard"
+        role="tabpanel"
+        aria-labelledby="tab-dashboard"
+      >
+        <!-- Chart Section -->
+        <div class="chart-container">
+          <div class="card">
+            <div class="card-header">
+              <h2 class="card-title">Balance Overview</h2>
+            </div>
+            <div class="chart-wrapper" id="balance-chart" aria-label="Bar chart showing jar balances">
+              <!-- Chart bars will be rendered here -->
+            </div>
+          </div>
+        </div>
+        
+        <!-- Income Distribution Section -->
+        <section class="distribute-section" aria-labelledby="distribute-title">
+          <div class="card distribute-card">
+            <div class="card-header">
+              <h2 class="card-title" id="distribute-title">💰 Distribute Income</h2>
+            </div>
+            
+            <!-- Distribution mode toggle -->
+            <div class="distribute-toggle" role="group" aria-label="Distribution mode">
+              <button 
+                class="btn btn-secondary active" 
+                id="mode-auto"
+                aria-pressed="true"
+              >
+                Auto (%)
+              </button>
+              <button 
+                class="btn btn-secondary" 
+                id="mode-manual"
+                aria-pressed="false"
+              >
+                Manual
+              </button>
+            </div>
+            
+            <!-- Auto distribution form -->
+            <form class="distribute-form" id="auto-distribute-form">
+              <div class="form-group">
+                <label for="income-amount" class="form-label">Income Amount</label>
+                <input 
+                  type="number" 
+                  id="income-amount" 
+                  class="form-input"
+                  placeholder="Enter amount..."
+                  min="0.01"
+                  step="0.01"
+                  required
+                  aria-describedby="income-help"
+                >
+                <small id="income-help" class="sr-only">Enter the income amount to distribute across jars</small>
+              </div>
+              <div class="form-group">
+                <label for="income-note" class="form-label">Note (optional)</label>
+                <input 
+                  type="text" 
+                  id="income-note" 
+                  class="form-input"
+                  placeholder="e.g., Paycheck, Bonus..."
+                  maxlength="100"
+                >
+              </div>
+              <button type="submit" class="btn btn-primary btn-lg">
+                <span aria-hidden="true">✨</span>
+                Distribute
+              </button>
+            </form>
+            
+            <!-- Manual distribution inputs -->
+            <div class="manual-distribution" id="manual-distribution">
+              <form id="manual-distribute-form">
+                <div class="manual-grid" id="manual-inputs">
+                  <!-- Manual jar inputs will be rendered here -->
+                </div>
+                <div class="form-group mt-md">
+                  <label for="manual-note" class="form-label">Note (optional)</label>
+                  <input 
+                    type="text" 
+                    id="manual-note" 
+                    class="form-input"
+                    placeholder="e.g., Custom allocation..."
+                    maxlength="100"
+                  >
+                </div>
+                <button type="submit" class="btn btn-primary btn-lg mt-md">
+                  <span aria-hidden="true">✨</span>
+                  Add to Jars
+                </button>
+              </form>
+            </div>
+          </div>
+        </section>
+        
+        <!-- Jars Grid -->
+        <section aria-labelledby="jars-title">
+          <h2 id="jars-title" class="sr-only">Budget Jars</h2>
+          <div class="jars-grid" id="jars-grid">
+            <!-- Jar cards will be rendered here -->
+          </div>
+        </section>
+      </section>
+      
+      <!-- History Panel -->
+      <section 
+        class="tab-panel" 
+        id="panel-history"
+        role="tabpanel"
+        aria-labelledby="tab-history"
+      >
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title">📜 Transaction History</h2>
+          </div>
+          
+          <!-- Filters -->
+          <div class="history-filters">
+            <div class="form-group">
+              <label for="filter-jar" class="form-label">Jar</label>
+              <select id="filter-jar" class="form-select">
+                <option value="all">All Jars</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="filter-type" class="form-label">Type</label>
+              <select id="filter-type" class="form-select">
+                <option value="all">All Types</option>
+                <option value="deposit">Deposits</option>
+                <option value="withdraw">Withdrawals</option>
+                <option value="transfer">Transfers</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="filter-date" class="form-label">Date</label>
+              <input type="date" id="filter-date" class="form-input">
+            </div>
+            <div class="form-group" style="display: flex; align-items: flex-end;">
+              <button class="btn btn-secondary" id="clear-filters">Clear Filters</button>
+            </div>
+          </div>
+          
+          <!-- Transaction list -->
+          <div class="transaction-list" id="transaction-list" role="list" aria-live="polite">
+            <!-- Transactions will be rendered here -->
+          </div>
+        </div>
+      </section>
+      
+      <!-- Settings Panel -->
+      <section 
+        class="tab-panel" 
+        id="panel-settings"
+        role="tabpanel"
+        aria-labelledby="tab-settings"
+      >
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title">⚙️ Settings</h2>
+          </div>
+          
+          <!-- Percentage Allocation -->
+          <div class="settings-section">
+            <h3>Default Percentage Allocation</h3>
+            <p style="color: var(--color-text-secondary); margin-bottom: var(--space-md); font-size: 0.875rem;">
+              Set how income should be distributed across jars. Must total 100%.
+            </p>
+            <div class="percentage-grid" id="percentage-settings">
+              <!-- Percentage inputs will be rendered here -->
+            </div>
+            <div class="percentage-total" id="percentage-total" aria-live="polite">
+              Total: <span id="percentage-sum">100</span>%
+            </div>
+            <button class="btn btn-primary mt-md" id="save-percentages">Save Percentages</button>
+          </div>
+          
+          <!-- Data Management -->
+          <div class="settings-section">
+            <h3>Data Management</h3>
+            <div class="settings-actions">
+              <button class="btn btn-secondary" id="export-data">
+                <span aria-hidden="true">📥</span>
+                Export JSON
+              </button>
+              <button class="btn btn-secondary" id="import-data">
+                <span aria-hidden="true">📤</span>
+                Import JSON
+              </button>
+              <input type="file" id="import-file" accept=".json" style="display: none;">
+              <button class="btn btn-danger" id="reset-balances">
+                <span aria-hidden="true">🔄</span>
+                Reset Balances
+              </button>
+              <button class="btn btn-danger" id="clear-history">
+                <span aria-hidden="true">🗑️</span>
+                Clear History
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+  
+  <!-- Toast container for notifications -->
+  <div class="toast-container" id="toast-container" aria-live="assertive" aria-atomic="true"></div>
+  
+  <!-- Transaction Modal -->
+  <div class="modal-overlay" id="transaction-modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 class="modal-title" id="modal-title">Transaction</h3>
+        <button class="modal-close" aria-label="Close modal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form id="transaction-form">
+          <input type="hidden" id="transaction-jar-id">
+          <input type="hidden" id="transaction-type">
+          
+          <div class="form-group">
+            <label for="transaction-amount" class="form-label">Amount</label>
+            <input 
+              type="number" 
+              id="transaction-amount" 
+              class="form-input"
+              placeholder="0.00"
+              min="0.01"
+              step="0.01"
+              required
+            >
+          </div>
+          
+          <!-- Transfer destination (shown only for transfers) -->
+          <div class="form-group" id="transfer-destination-group" style="display: none;">
+            <label for="transfer-destination" class="form-label">Transfer to</label>
+            <select id="transfer-destination" class="form-select">
+              <!-- Options will be populated -->
+            </select>
+          </div>
+          
+          <div class="form-group">
+            <label for="transaction-note" class="form-label">Note (optional)</label>
+            <input 
+              type="text" 
+              id="transaction-note-input" 
+              class="form-input"
+              placeholder="Add a note..."
+              maxlength="100"
+            >
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary modal-cancel">Cancel</button>
+        <button class="btn btn-primary" id="modal-confirm">Confirm</button>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Confirm Modal -->
+  <div class="modal-overlay" id="confirm-modal" role="dialog" aria-modal="true" aria-labelledby="confirm-title">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 class="modal-title" id="confirm-title">Confirm Action</h3>
+        <button class="modal-close" aria-label="Close modal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p id="confirm-message">Are you sure you want to proceed?</p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary modal-cancel">Cancel</button>
+        <button class="btn btn-danger" id="confirm-action">Confirm</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    /**
+     * ============================================================================
+     * SIX JARS BUDGET MANAGER - APPLICATION SCRIPT
+     * ============================================================================
+     * 
+     * This script manages all application logic including:
+     * - State management and localStorage persistence
+     * - Income distribution calculations
+     * - Transaction processing
+     * - UI rendering and updates
+     * - Validation and error handling
+     * 
+     * ============================================================================
+     */
+
+    // ============================================================================
+    // LOCALIZATION STRINGS (for future i18n support)
+    // ============================================================================
+    const STRINGS = {
+      jarNames: {
+        necessities: 'Necessities',
+        play: 'Play',
+        education: 'Education',
+        savings: 'Long-term Savings',
+        give: 'Give',
+        invest: 'Invest'
+      },
+      transactionTypes: {
+        deposit: 'Deposit',
+        withdraw: 'Withdrawal',
+        transfer_in: 'Transfer In',
+        transfer_out: 'Transfer Out'
+      },
+      messages: {
+        distributionSuccess: 'Income distributed successfully!',
+        transactionSuccess: 'Transaction completed!',
+        transferSuccess: 'Transfer completed!',
+        percentagesSaved: 'Percentages saved!',
+        exportSuccess: 'Data exported successfully!',
+        importSuccess: 'Data imported successfully!',
+        balancesReset: 'All balances have been reset!',
+        historyCleared: 'Transaction history cleared!',
+        invalidAmount: 'Please enter a valid amount',
+        insufficientFunds: 'Insufficient funds in jar',
+        percentageError: 'Percentages must total 100%',
+        importError: 'Failed to import data. Invalid file format.',
+        confirmReset: 'This will reset all jar balances to zero. This action cannot be undone.',
+        confirmClearHistory: 'This will permanently delete all transaction history. This action cannot be undone.'
+      }
+    };
+
+    // ============================================================================
+    // JAR CONFIGURATION
+    // ============================================================================
+    const JAR_CONFIG = [
+      { id: 'necessities', icon: '🏠', color: 'var(--jar-necessities)', defaultPercent: 50 },
+      { id: 'play', icon: '🎮', color: 'var(--jar-play)', defaultPercent: 10 },
+      { id: 'education', icon: '📚', color: 'var(--jar-education)', defaultPercent: 10 },
+      { id: 'savings', icon: '🏦', color: 'var(--jar-savings)', defaultPercent: 10 },
+      { id: 'give', icon: '🎁', color: 'var(--jar-give)', defaultPercent: 10 },
+      { id: 'invest', icon: '📈', color: 'var(--jar-invest)', defaultPercent: 10 }
+    ];
+
+    // ============================================================================
+    // APPLICATION STATE
+    // ============================================================================
+    const STORAGE_KEY = 'sixJarsBudget';
+
+    /**
+     * Default application state with sample data
+     */
+    const DEFAULT_STATE = {
+      jars: {
+        necessities: { balance: 200, percent: 50 },
+        play: { balance: 50, percent: 10 },
+        education: { balance: 0, percent: 10 },
+        savings: { balance: 100, percent: 10 },
+        give: { balance: 20, percent: 10 },
+        invest: { balance: 30, percent: 10 }
+      },
+      transactions: [
+        {
+          id: 'sample-1',
+          jarId: 'necessities',
+          type: 'deposit',
+          amount: 200,
+          note: 'Initial balance',
+          timestamp: Date.now() - 86400000
+        },
+        {
+          id: 'sample-2',
+          jarId: 'play',
+          type: 'deposit',
+          amount: 50,
+          note: 'Initial balance',
+          timestamp: Date.now() - 86400000
+        },
+        {
+          id: 'sample-3',
+          jarId: 'savings',
+          type: 'deposit',
+          amount: 100,
+          note: 'Initial balance',
+          timestamp: Date.now() - 86400000
+        },
+        {
+          id: 'sample-4',
+          jarId: 'give',
+          type: 'deposit',
+          amount: 20,
+          note: 'Initial balance',
+          timestamp: Date.now() - 86400000
+        },
+        {
+          id: 'sample-5',
+          jarId: 'invest',
+          type: 'deposit',
+          amount: 30,
+          note: 'Initial balance',
+          timestamp: Date.now() - 86400000
+        }
+      ],
+      theme: 'light'
+    };
+
+    // Current application state
+    let state = loadState();
+
+    // ============================================================================
+    // STATE MANAGEMENT
+    // ============================================================================
+
+    /**
+     * Load state from localStorage or use default
+     * @returns {Object} Application state
+     */
+    function loadState() {
+      try {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          // Merge with defaults to handle missing properties
+          return {
+            ...DEFAULT_STATE,
+            ...parsed,
+            jars: { ...DEFAULT_STATE.jars, ...parsed.jars }
+          };
+        }
+      } catch (e) {
+        console.error('Error loading state:', e);
+      }
+      return { ...DEFAULT_STATE };
+    }
+
+    /**
+     * Save current state to localStorage
+     */
+    async function saveState() {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      } catch (e) {
+        console.error('Error saving state:', e);
+        try { showToast('Failed to save data', 'error'); } catch (_) {}
+      }
+
+      // Attempt to sync to backend when API details are available.
+      // `API_BASE` and `USER_ID` are defined later in the file; checking
+      // for their existence avoids runtime errors when used only locally.
+      if (typeof API_BASE !== 'undefined' && API_BASE && typeof USER_ID !== 'undefined' && USER_ID) {
+        try {
+          await fetch(`${API_BASE}/budget/${USER_ID}/state`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ jars: state.jars, transactions: state.transactions, theme: state.theme })
+          });
+        } catch (err) {
+          console.warn('Could not sync with backend:', err && err.message ? err.message : err);
+        }
+      }
+    }
+
+    /**
+     * Generate unique ID for transactions
+     * @returns {string} Unique ID
+     */
+    function generateId() {
+      return Date.now().toString(36) + Math.random().toString(36).substr(2);
+    }
+
+    // ============================================================================
+    // FINANCIAL CALCULATIONS
+    // ============================================================================
+
+    /**
+     * Calculate total balance across all jars
+     * @returns {number} Total balance
+     */
+    function getTotalBalance() {
+      return Object.values(state.jars).reduce((sum, jar) => sum + jar.balance, 0);
+    }
+
+    /**
+     * Distribute income according to jar percentages
+     * @param {number} amount - Total amount to distribute
+     * @param {string} note - Optional note for transaction
+     * @returns {Object} Distribution result
+     */
+    function distributeIncome(amount, note = '') {
+      const distributions = {};
+      let remaining = amount;
+      const jarIds = Object.keys(state.jars);
+      
+      // Calculate each jar's share
+      jarIds.forEach((jarId, index) => {
+        const jar = state.jars[jarId];
+        if (index === jarIds.length - 1) {
+          // Last jar gets the remainder to avoid rounding errors
+          distributions[jarId] = Math.round(remaining * 100) / 100;
+        } else {
+          const share = Math.round((amount * jar.percent / 100) * 100) / 100;
+          distributions[jarId] = share;
+          remaining -= share;
+        }
+      });
+
+      // Apply distributions and record transactions
+      const timestamp = Date.now();
+      Object.entries(distributions).forEach(([jarId, share]) => {
+        if (share > 0) {
+          state.jars[jarId].balance += share;
+          state.transactions.unshift({
+            id: generateId(),
+            jarId,
+            type: 'deposit',
+            amount: share,
+            note: note || `Income distribution (${state.jars[jarId].percent}%)`,
+            timestamp
+          });
+        }
+      });
+
+      saveState();
+      return distributions;
+    }
+
+    /**
+     * Add money to a specific jar
+     * @param {string} jarId - Target jar ID
+     * @param {number} amount - Amount to add
+     * @param {string} note - Optional note
+     */
+    function addToJar(jarId, amount, note = '') {
+      state.jars[jarId].balance += amount;
+      state.transactions.unshift({
+        id: generateId(),
+        jarId,
+        type: 'deposit',
+        amount,
+        note: note || 'Manual deposit',
+        timestamp: Date.now()
+      });
+      saveState();
+    }
+
+    /**
+     * Withdraw money from a specific jar
+     * @param {string} jarId - Source jar ID
+     * @param {number} amount - Amount to withdraw
+     * @param {string} note - Optional note
+     * @returns {boolean} Success status
+     */
+    function withdrawFromJar(jarId, amount, note = '') {
+      if (state.jars[jarId].balance < amount) {
+        return false;
+      }
+      
+      state.jars[jarId].balance -= amount;
+      state.transactions.unshift({
+        id: generateId(),
+        jarId,
+        type: 'withdraw',
+        amount,
+        note: note || 'Withdrawal',
+        timestamp: Date.now()
+      });
+      saveState();
+      return true;
+    }
+
+    /**
+     * Transfer money between jars
+     * @param {string} fromJarId - Source jar ID
+     * @param {string} toJarId - Destination jar ID
+     * @param {number} amount - Amount to transfer
+     * @param {string} note - Optional note
+     * @returns {boolean} Success status
+     */
+    function transferBetweenJars(fromJarId, toJarId, amount, note = '') {
+      if (state.jars[fromJarId].balance < amount) {
+        return false;
+      }
+
+      const timestamp = Date.now();
+      const fromName = STRINGS.jarNames[fromJarId];
+      const toName = STRINGS.jarNames[toJarId];
+
+      // Withdraw from source
+      state.jars[fromJarId].balance -= amount;
+      state.transactions.unshift({
+        id: generateId(),
+        jarId: fromJarId,
+        type: 'transfer_out',
+        amount,
+        note: note || `Transfer to ${toName}`,
+        relatedJar: toJarId,
+        timestamp
+      });
+
+      // Deposit to destination
+      state.jars[toJarId].balance += amount;
+      state.transactions.unshift({
+        id: generateId(),
+        jarId: toJarId,
+        type: 'transfer_in',
+        amount,
+        note: note || `Transfer from ${fromName}`,
+        relatedJar: fromJarId,
+        timestamp
+      });
+
+      saveState();
+      return true;
+    }
+
+    // ============================================================================
+    // UNIT TEST - Distribution Math
+    // ============================================================================
+
+    /**
+     * Simple unit test for distribution calculation
+     * Run in console: runDistributionTest()
+     */
+    function runDistributionTest() {
+      console.log('=== Distribution Math Test ===');
+      
+      // Test case: $1000 with default percentages
+      const testAmount = 1000;
+      const expected = {
+        necessities: 500,  // 50%
+        play: 100,         // 10%
+        education: 100,    // 10%
+        savings: 100,      // 10%
+        give: 100,         // 10%
+        invest: 100        // 10%
+      };
+
+      // Calculate actual distribution
+      const actual = {};
+      let remaining = testAmount;
+      const jarIds = Object.keys(DEFAULT_STATE.jars);
+      
+      jarIds.forEach((jarId, index) => {
+        const percent = DEFAULT_STATE.jars[jarId].percent;
+        if (index === jarIds.length - 1) {
+          actual[jarId] = Math.round(remaining * 100) / 100;
+        } else {
+          const share = Math.round((testAmount * percent / 100) * 100) / 100;
+          actual[jarId] = share;
+          remaining -= share;
+        }
+      });
+
+      // Compare
+      let passed = true;
+      Object.keys(expected).forEach(jarId => {
+        const match = actual[jarId] === expected[jarId];
+        console.log(`${jarId}: Expected ${expected[jarId]}, Got ${actual[jarId]} - ${match ? '✅' : '❌'}`);
+        if (!match) passed = false;
+      });
+
+      const total = Object.values(actual).reduce((a, b) => a + b, 0);
+      console.log(`Total: ${total} (should be ${testAmount}) - ${total === testAmount ? '✅' : '❌'}`);
+      
+      console.log(`\n=== Test ${passed && total === testAmount ? 'PASSED ✅' : 'FAILED ❌'} ===`);
+      return passed && total === testAmount;
+    }
+
+    // Make test available globally
+    window.runDistributionTest = runDistributionTest;
+
+    // ============================================================================
+    // UI RENDERING
+    // ============================================================================
+
+    /**
+     * Format currency for display
+     * @param {number} amount - Amount to format
+     * @returns {string} Formatted currency string
+     */
+    function formatCurrency(amount) {
+      return new Intl.NumberFormat('en-US', {
+        style: 'currency',
+        currency: 'USD'
+      }).format(amount);
+    }
+
+    /**
+     * Format date for display
+     * @param {number} timestamp - Unix timestamp
+     * @returns {string} Formatted date string
+     */
+    function formatDate(timestamp) {
+      return new Intl.DateTimeFormat('en-US', {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      }).format(new Date(timestamp));
+    }
+
+    /**
+     * Render all jar cards
+     */
+    function renderJars() {
+      const grid = document.getElementById('jars-grid');
+      const total = getTotalBalance();
+      
+      grid.innerHTML = JAR_CONFIG.map(config => {
+        const jar = state.jars[config.id];
+        const percentOfTotal = total > 0 ? (jar.balance / total * 100).toFixed(1) : 0;
+        
+        return `
+          <article 
+            class="card jar-card" 
+            style="--jar-color: ${config.color};"
+            data-jar-id="${config.id}"
+          >
+            <div class="jar-header">
+              <div class="jar-info">
+                <span class="jar-icon" aria-hidden="true">${config.icon}</span>
+                <div>
+                  <h3 class="jar-name">${STRINGS.jarNames[config.id]}</h3>
+                </div>
+              </div>
+              <div class="jar-percentage">
+                <input 
+                  type="number" 
+                  value="${jar.percent}"
+                  min="0"
+                  max="100"
+                  class="jar-percent-input"
+                  data-jar-id="${config.id}"
+                  aria-label="Percentage for ${STRINGS.jarNames[config.id]}"
+                >%
+              </div>
+            </div>
+            
+            <div class="jar-balance">
+              <div class="jar-balance-label">Current Balance</div>
+              <div class="jar-balance-amount">${formatCurrency(jar.balance)}</div>
+            </div>
+            
+            <div class="jar-progress">
+              <div class="progress-bar" role="progressbar" aria-valuenow="${percentOfTotal}" aria-valuemin="0" aria-valuemax="100">
+                <div class="progress-fill" style="width: ${Math.min(percentOfTotal, 100)}%;"></div>
+              </div>
+              <div class="progress-text">
+                <span>${percentOfTotal}% of total</span>
+                <span>Target: ${jar.percent}%</span>
+              </div>
+            </div>
+            
+            <div class="jar-actions">
+              <button class="btn btn-success btn-sm" data-action="add" data-jar="${config.id}">
+                <span aria-hidden="true">+</span> Add
+              </button>
+              <button class="btn btn-danger btn-sm" data-action="withdraw" data-jar="${config.id}">
+                <span aria-hidden="true">−</span> Withdraw
+              </button>
+              <button class="btn btn-secondary btn-sm" data-action="transfer" data-jar="${config.id}">
+                <span aria-hidden="true">↗</span> Transfer
+              </button>
+            </div>
+          </article>
+        `;
+      }).join('');
+
+      // Update total balance display
+      document.getElementById('total-balance').textContent = formatCurrency(total);
+    }
+
+    /**
+     * Render balance chart
+     */
+    function renderChart() {
+      const chartContainer = document.getElementById('balance-chart');
+      const total = getTotalBalance();
+      const maxBalance = Math.max(...Object.values(state.jars).map(j => j.balance), 1);
+      
+      chartContainer.innerHTML = JAR_CONFIG.map(config => {
+        const jar = state.jars[config.id];
+        const heightPercent = (jar.balance / maxBalance * 100).toFixed(1);
+        
+        return `
+          <div class="chart-bar-container">
+            <div 
+              class="chart-bar" 
+              style="height: ${heightPercent}%; background: ${config.color};"
+              title="${STRINGS.jarNames[config.id]}: ${formatCurrency(jar.balance)}"
+            >
+              <span class="chart-bar-value">${formatCurrency(jar.balance)}</span>
+            </div>
+            <span class="chart-bar-label">${config.icon}</span>
+          </div>
+        `;
+      }).join('');
+    }
+
+    /**
+     * Render manual distribution inputs
+     */
+    function renderManualInputs() {
+      const container = document.getElementById('manual-inputs');
+      
+      container.innerHTML = JAR_CONFIG.map(config => `
+        <div class="manual-jar-input">
+          <span class="jar-icon" aria-hidden="true">${config.icon}</span>
+          <input 
+            type="number" 
+            class="form-input"
+            id="manual-${config.id}"
+            placeholder="${STRINGS.jarNames[config.id]}"
+            min="0"
+            step="0.01"
+            aria-label="Amount for ${STRINGS.jarNames[config.id]}"
+          >
+        </div>
+      `).join('');
+    }
+
+    /**
+     * Render transaction history with filters
+     */
+    function renderHistory() {
+      const container = document.getElementById('transaction-list');
+      const filterJar = document.getElementById('filter-jar').value;
+      const filterType = document.getElementById('filter-type').value;
+      const filterDate = document.getElementById('filter-date').value;
+
+      // Filter transactions
+      let filtered = state.transactions.filter(tx => {
+        if (filterJar !== 'all' && tx.jarId !== filterJar) return false;
+        if (filterType !== 'all') {
+          if (filterType === 'deposit' && tx.type !== 'deposit') return false;
+          if (filterType === 'withdraw' && tx.type !== 'withdraw') return false;
+          if (filterType === 'transfer' && !tx.type.startsWith('transfer')) return false;
+        }
+        if (filterDate) {
+          const txDate = new Date(tx.timestamp).toISOString().split('T')[0];
+          if (txDate !== filterDate) return false;
+        }
+        return true;
+      });
+
+      if (filtered.length === 0) {
+        container.innerHTML = `
+          <div class="empty-state">
+            <div class="empty-state-icon">📭</div>
+            <p>No transactions found</p>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = filtered.map(tx => {
+        const jarConfig = JAR_CONFIG.find(j => j.id === tx.jarId);
+        const isPositive = tx.type === 'deposit' || tx.type === 'transfer_in';
+        const iconClass = tx.type.startsWith('transfer') ? 'transfer' : (isPositive ? 'deposit' : 'withdraw');
+        
+        return `
+          <div class="transaction-item" role="listitem">
+            <div class="transaction-icon ${iconClass}">
+              ${tx.type === 'deposit' ? '💰' : tx.type === 'withdraw' ? '💸' : '↔️'}
+            </div>
+            <div class="transaction-details">
+              <div class="transaction-type">${STRINGS.transactionTypes[tx.type] || tx.type}</div>
+              <div class="transaction-jar">${jarConfig?.icon || ''} ${STRINGS.jarNames[tx.jarId]}</div>
+              ${tx.note ? `<div class="transaction-note">${tx.note}</div>` : ''}
+            </div>
+            <div class="transaction-meta">
+              <div class="transaction-amount ${isPositive ? 'positive' : 'negative'}">
+                ${isPositive ? '+' : '-'}${formatCurrency(tx.amount)}
+              </div>
+              <div class="transaction-date">${formatDate(tx.timestamp)}</div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    /**
+     * Populate jar filter dropdown
+     */
+    function populateJarFilter() {
+      const select = document.getElementById('filter-jar');
+      select.innerHTML = '<option value="all">All Jars</option>' +
+        JAR_CONFIG.map(config => 
+          `<option value="${config.id}">${config.icon} ${STRINGS.jarNames[config.id]}</option>`
+        ).join('');
+    }
+
+    /**
+     * Render percentage settings
+     */
+    function renderPercentageSettings() {
+      const container = document.getElementById('percentage-settings');
+      
+      container.innerHTML = JAR_CONFIG.map(config => `
+        <div class="percentage-item">
+          <span class="jar-icon" aria-hidden="true">${config.icon}</span>
+          <label for="percent-${config.id}" class="form-label" style="flex: 1;">${STRINGS.jarNames[config.id]}</label>
+          <input 
+            type="number" 
+            class="form-input percent-input"
+            id="percent-${config.id}"
+            value="${state.jars[config.id].percent}"
+            min="0"
+            max="100"
+            data-jar-id="${config.id}"
+          >
+          <span>%</span>
+        </div>
+      `).join('');
+
+      updatePercentageTotal();
+    }
+
+    /**
+     * Update percentage total display
+     */
+    function updatePercentageTotal() {
+      const inputs = document.querySelectorAll('.percent-input');
+      let total = 0;
+      inputs.forEach(input => {
+        total += parseFloat(input.value) || 0;
+      });
+      
+      const totalElement = document.getElementById('percentage-total');
+      const sumElement = document.getElementById('percentage-sum');
+      
+      sumElement.textContent = total;
+      totalElement.classList.remove('valid', 'invalid');
+      totalElement.classList.add(total === 100 ? 'valid' : 'invalid');
+    }
+
+    /**
+     * Refresh all UI components
+     */
+    function refreshUI() {
+      renderJars();
+      renderChart();
+      renderHistory();
+    }
+
+    // ============================================================================
+    // TOAST NOTIFICATIONS
+    // ============================================================================
+
+    /**
+     * Show toast notification
+     * @param {string} message - Message to display
+     * @param {string} type - 'success', 'error', or 'warning'
+     */
+    function showToast(message, type = 'success') {
+      const container = document.getElementById('toast-container');
+      const toast = document.createElement('div');
+      toast.className = `toast ${type}`;
+      
+      const icons = {
+        success: '✅',
+        error: '❌',
+        warning: '⚠️'
+      };
+      
+      toast.innerHTML = `
+        <span class="toast-icon">${icons[type]}</span>
+        <span class="toast-message">${message}</span>
+        <button class="toast-close" aria-label="Dismiss">&times;</button>
+      `;
+      
+      container.appendChild(toast);
+      
+      // Auto-remove after 4 seconds
+      const timeout = setTimeout(() => {
+        toast.remove();
+      }, 4000);
+      
+      // Manual close
+      toast.querySelector('.toast-close').addEventListener('click', () => {
+        clearTimeout(timeout);
+        toast.remove();
+      });
+    }
+
+    // ============================================================================
+    // MODAL HANDLING
+    // ============================================================================
+
+    /**
+     * Open transaction modal
+     * @param {string} jarId - Jar ID
+     * @param {string} type - Transaction type (add, withdraw, transfer)
+     */
+    function openTransactionModal(jarId, type) {
+      const modal = document.getElementById('transaction-modal');
+      const titleMap = {
+        add: 'Add Money',
+        withdraw: 'Withdraw Money',
+        transfer: 'Transfer Money'
+      };
+      
+      const jarConfig = JAR_CONFIG.find(j => j.id === jarId);
+      document.getElementById('modal-title').textContent = `${titleMap[type]} - ${jarConfig.icon} ${STRINGS.jarNames[jarId]}`;
+      document.getElementById('transaction-jar-id').value = jarId;
+      document.getElementById('transaction-type').value = type;
+      document.getElementById('transaction-amount').value = '';
+      document.getElementById('transaction-note-input').value = '';
+      
+      // Show/hide transfer destination
+      const transferGroup = document.getElementById('transfer-destination-group');
+      if (type === 'transfer') {
+        transferGroup.style.display = 'block';
+        const select = document.getElementById('transfer-destination');
+        select.innerHTML = JAR_CONFIG
+          .filter(j => j.id !== jarId)
+          .map(j => `<option value="${j.id}">${j.icon} ${STRINGS.jarNames[j.id]}</option>`)
+          .join('');
+      } else {
+        transferGroup.style.display = 'none';
+      }
+      
+      modal.classList.add('active');
+      document.getElementById('transaction-amount').focus();
+    }
+
+    /**
+     * Close transaction modal
+     */
+    function closeTransactionModal() {
+      document.getElementById('transaction-modal').classList.remove('active');
+    }
+
+    /**
+     * Open confirm modal
+     * @param {string} title - Modal title
+     * @param {string} message - Confirmation message
+     * @param {Function} onConfirm - Callback on confirm
+     */
+    function openConfirmModal(title, message, onConfirm) {
+      const modal = document.getElementById('confirm-modal');
+      document.getElementById('confirm-title').textContent = title;
+      document.getElementById('confirm-message').textContent = message;
+      
+      const confirmBtn = document.getElementById('confirm-action');
+      const newBtn = confirmBtn.cloneNode(true);
+      confirmBtn.parentNode.replaceChild(newBtn, confirmBtn);
+      newBtn.addEventListener('click', () => {
+        onConfirm();
+        closeConfirmModal();
+      });
+      
+      modal.classList.add('active');
+    }
+
+    /**
+     * Close confirm modal
+     */
+    function closeConfirmModal() {
+      document.getElementById('confirm-modal').classList.remove('active');
+    }
+
+    // ============================================================================
+    // THEME MANAGEMENT
+    // ============================================================================
+
+    /**
+     * Toggle dark/light theme
+     */
+    function toggleTheme() {
+      const newTheme = state.theme === 'light' ? 'dark' : 'light';
+      state.theme = newTheme;
+      document.documentElement.setAttribute('data-theme', newTheme);
+      document.getElementById('theme-icon').textContent = newTheme === 'dark' ? '☀️' : '🌙';
+      saveState();
+    }
+
+    /**
+     * Apply saved theme on load
+     */
+    function applyTheme() {
+      document.documentElement.setAttribute('data-theme', state.theme);
+      document.getElementById('theme-icon').textContent = state.theme === 'dark' ? '☀️' : '🌙';
+    }
+
+    // ============================================================================
+    // DATA EXPORT/IMPORT
+    // ============================================================================
+
+    /**
+     * Export state as JSON file
+     */
+    function exportData() {
+      const dataStr = JSON.stringify(state, null, 2);
+      const blob = new Blob([dataStr], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `six-jars-backup-${new Date().toISOString().split('T')[0]}.json`;
+      link.click();
+      URL.revokeObjectURL(url);
+      showToast(STRINGS.messages.exportSuccess, 'success');
+    }
+
+    /**
+     * Import state from JSON file
+     * @param {File} file - JSON file to import
+     */
+    function importData(file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        try {
+          const imported = JSON.parse(e.target.result);
+          // Validate structure
+          if (imported.jars && imported.transactions) {
+            state = {
+              ...DEFAULT_STATE,
+              ...imported,
+              jars: { ...DEFAULT_STATE.jars, ...imported.jars }
+            };
+            saveState();
+            refreshUI();
+            renderPercentageSettings();
+            applyTheme();
+            showToast(STRINGS.messages.importSuccess, 'success');
+          } else {
+            throw new Error('Invalid structure');
+          }
+        } catch (err) {
+          console.error('Import error:', err);
+          showToast(STRINGS.messages.importError, 'error');
+        }
+      };
+      reader.readAsText(file);
+    }
+
+    // ============================================================================
+    // EVENT HANDLERS
+    // ============================================================================
+
+    /**
+     * Initialize all event listeners
+     */
+    function initEventListeners() {
+      // Tab navigation
+      document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('.tab-btn').forEach(b => {
+            b.classList.remove('active');
+            b.setAttribute('aria-selected', 'false');
+          });
+          document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+          
+          btn.classList.add('active');
+          btn.setAttribute('aria-selected', 'true');
+          document.getElementById(`panel-${btn.dataset.tab}`).classList.add('active');
+          
+          if (btn.dataset.tab === 'history') renderHistory();
+          if (btn.dataset.tab === 'settings') renderPercentageSettings();
+        });
+      });
+
+      // Theme toggle
+      document.getElementById('theme-toggle').addEventListener('click', toggleTheme);
+
+      // Distribution mode toggle
+      document.getElementById('mode-auto').addEventListener('click', () => {
+        document.getElementById('mode-auto').classList.add('active');
+        document.getElementById('mode-auto').setAttribute('aria-pressed', 'true');
+        document.getElementById('mode-manual').classList.remove('active');
+        document.getElementById('mode-manual').setAttribute('aria-pressed', 'false');
+        document.getElementById('auto-distribute-form').style.display = 'flex';
+        document.getElementById('manual-distribution').classList.remove('active');
+      });
+
+      document.getElementById('mode-manual').addEventListener('click', () => {
+        document.getElementById('mode-manual').classList.add('active');
+        document.getElementById('mode-manual').setAttribute('aria-pressed', 'true');
+        document.getElementById('mode-auto').classList.remove('active');
+        document.getElementById('mode-auto').setAttribute('aria-pressed', 'false');
+        document.getElementById('auto-distribute-form').style.display = 'none';
+        document.getElementById('manual-distribution').classList.add('active');
+        renderManualInputs();
+      });
+
+      // Auto distribution form
+      document.getElementById('auto-distribute-form').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const amount = parseFloat(document.getElementById('income-amount').value);
+        const note = document.getElementById('income-note').value.trim();
+        
+        if (!amount || amount <= 0) {
+          showToast(STRINGS.messages.invalidAmount, 'error');
+          return;
+        }
+
+        distributeIncome(amount, note);
+        refreshUI();
+        document.getElementById('income-amount').value = '';
+        document.getElementById('income-note').value = '';
+        showToast(STRINGS.messages.distributionSuccess, 'success');
+      });
+
+      // Manual distribution form
+      document.getElementById('manual-distribute-form').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const note = document.getElementById('manual-note').value.trim();
+        let hasAmount = false;
+        
+        JAR_CONFIG.forEach(config => {
+          const input = document.getElementById(`manual-${config.id}`);
+          const amount = parseFloat(input.value) || 0;
+          if (amount > 0) {
+            hasAmount = true;
+            addToJar(config.id, amount, note || 'Manual addition');
+          }
+        });
+
+        if (!hasAmount) {
+          showToast(STRINGS.messages.invalidAmount, 'error');
+          return;
+        }
+
+        refreshUI();
+        renderManualInputs();
+        document.getElementById('manual-note').value = '';
+        showToast(STRINGS.messages.distributionSuccess, 'success');
+      });
+
+      // Jar action buttons (delegated)
+      document.getElementById('jars-grid').addEventListener('click', (e) => {
+        const btn = e.target.closest('button[data-action]');
+        if (btn) {
+          const action = btn.dataset.action;
+          const jarId = btn.dataset.jar;
+          openTransactionModal(jarId, action);
+        }
+      });
+
+      // Jar percentage inputs (delegated)
+      document.getElementById('jars-grid').addEventListener('change', (e) => {
+        if (e.target.classList.contains('jar-percent-input')) {
+          const jarId = e.target.dataset.jarId;
+          const newPercent = parseFloat(e.target.value) || 0;
+          state.jars[jarId].percent = Math.max(0, Math.min(100, newPercent));
+          
+          // Check if percentages sum to 100
+          const total = Object.values(state.jars).reduce((sum, jar) => sum + jar.percent, 0);
+          if (total !== 100) {
+            showToast(`Percentages total ${total}%. ${STRINGS.messages.percentageError}`, 'warning');
+          }
+          
+          saveState();
+          renderJars();
+        }
+      });
+
+      // Transaction modal
+      document.getElementById('transaction-modal').querySelector('.modal-close').addEventListener('click', closeTransactionModal);
+      document.getElementById('transaction-modal').querySelector('.modal-cancel').addEventListener('click', closeTransactionModal);
+      document.getElementById('transaction-modal').addEventListener('click', (e) => {
+        if (e.target.classList.contains('modal-overlay')) closeTransactionModal();
+      });
+
+      document.getElementById('modal-confirm').addEventListener('click', () => {
+        const jarId = document.getElementById('transaction-jar-id').value;
+        const type = document.getElementById('transaction-type').value;
+        const amount = parseFloat(document.getElementById('transaction-amount').value);
+        const note = document.getElementById('transaction-note-input').value.trim();
+
+        if (!amount || amount <= 0) {
+          showToast(STRINGS.messages.invalidAmount, 'error');
+          return;
+        }
+
+        let success = true;
+        if (type === 'add') {
+          addToJar(jarId, amount, note);
+        } else if (type === 'withdraw') {
+          success = withdrawFromJar(jarId, amount, note);
+        } else if (type === 'transfer') {
+          const toJarId = document.getElementById('transfer-destination').value;
+          success = transferBetweenJars(jarId, toJarId, amount, note);
+        }
+
+        if (!success) {
+          showToast(STRINGS.messages.insufficientFunds, 'error');
+          return;
+        }
+
+        closeTransactionModal();
+        refreshUI();
+        showToast(type === 'transfer' ? STRINGS.messages.transferSuccess : STRINGS.messages.transactionSuccess, 'success');
+      });
+
+      // Confirm modal
+      document.getElementById('confirm-modal').querySelector('.modal-close').addEventListener('click', closeConfirmModal);
+      document.getElementById('confirm-modal').querySelector('.modal-cancel').addEventListener('click', closeConfirmModal);
+      document.getElementById('confirm-modal').addEventListener('click', (e) => {
+        if (e.target.classList.contains('modal-overlay')) closeConfirmModal();
+      });
+
+      // History filters
+      document.getElementById('filter-jar').addEventListener('change', renderHistory);
+      document.getElementById('filter-type').addEventListener('change', renderHistory);
+      document.getElementById('filter-date').addEventListener('change', renderHistory);
+      document.getElementById('clear-filters').addEventListener('click', () => {
+        document.getElementById('filter-jar').value = 'all';
+        document.getElementById('filter-type').value = 'all';
+        document.getElementById('filter-date').value = '';
+        renderHistory();
+      });
+
+      // Settings - percentage inputs
+      document.getElementById('percentage-settings').addEventListener('input', updatePercentageTotal);
+
+      document.getElementById('save-percentages').addEventListener('click', () => {
+        const inputs = document.querySelectorAll('.percent-input');
+        let total = 0;
+        const values = {};
+        
+        inputs.forEach(input => {
+          const jarId = input.dataset.jarId;
+          const value = parseFloat(input.value) || 0;
+          values[jarId] = value;
+          total += value;
+        });
+
+        if (total !== 100) {
+          showToast(STRINGS.messages.percentageError, 'error');
+          return;
+        }
+
+        Object.entries(values).forEach(([jarId, percent]) => {
+          state.jars[jarId].percent = percent;
+        });
+        
+        saveState();
+        renderJars();
+        showToast(STRINGS.messages.percentagesSaved, 'success');
+      });
+
+      // Data management
+      document.getElementById('export-data').addEventListener('click', exportData);
+      
+      document.getElementById('import-data').addEventListener('click', () => {
+        document.getElementById('import-file').click();
+      });
+      
+      document.getElementById('import-file').addEventListener('change', (e) => {
+        if (e.target.files[0]) {
+          importData(e.target.files[0]);
+          e.target.value = '';
+        }
+      });
+
+      document.getElementById('reset-balances').addEventListener('click', () => {
+        openConfirmModal(
+          'Reset Balances',
+          STRINGS.messages.confirmReset,
+          () => {
+            Object.keys(state.jars).forEach(jarId => {
+              state.jars[jarId].balance = 0;
+            });
+            saveState();
+            refreshUI();
+            showToast(STRINGS.messages.balancesReset, 'success');
+          }
+        );
+      });
+
+      document.getElementById('clear-history').addEventListener('click', () => {
+        openConfirmModal(
+          'Clear History',
+          STRINGS.messages.confirmClearHistory,
+          () => {
+            state.transactions = [];
+            saveState();
+            renderHistory();
+            showToast(STRINGS.messages.historyCleared, 'success');
+          }
+        );
+      });
+
+      // Keyboard shortcuts
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+          closeTransactionModal();
+          closeConfirmModal();
+        }
+      });
+    }
+
+    // ============================================================================
+    // INITIALIZATION
+    // ============================================================================
+
+    /**
+     * Initialize the application
+     */
+    function init() {
+      applyTheme();
+      renderJars();
+      renderChart();
+      populateJarFilter();
+      renderHistory();
+      renderManualInputs();
+      initEventListeners();
+      
+      console.log('Six Jars Budget Manager initialized');
+      console.log('Run `runDistributionTest()` in console to verify distribution math');
+    }
+
+    // Start the app when DOM is ready
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', init);
+    } else {
+      init();
+    }
+  <!-- Toast + components omitted in this trimmed demo. The script below integrates with the API. -->
+
+    // API settings — change if your backend runs elsewhere
+    const API_BASE = 'http://localhost:5000/api';
+    const USER_ID = 'demo-user';
+
+    // Fetch from backend and apply to local state (called on init)
+    async function fetchBudgetData() {
+      try {
+        const res = await fetch(`${API_BASE}/budget/${USER_ID}`);
+        if (!res.ok) {
+          console.warn('Server responded with', res.status);
+          return;
+        }
+        const data = await res.json();
+        // Map server data to local state shape
+        state.jars = {
+          necessities: { balance: data.jars.necessities.balance, percent: data.jars.necessities.percent },
+          play: { balance: data.jars.play.balance, percent: data.jars.play.percent },
+          education: { balance: data.jars.education.balance, percent: data.jars.education.percent },
+          savings: { balance: data.jars.savings.balance, percent: data.jars.savings.percent },
+          give: { balance: data.jars.give.balance, percent: data.jars.give.percent },
+          invest: { balance: data.jars.invest.balance, percent: data.jars.invest.percent }
+        };
+        state.transactions = data.transactions || [];
+        state.theme = data.theme || state.theme;
+
+        // persist locally
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+        console.log('State loaded from server');
+      } catch (err) {
+        console.warn('Failed to fetch server state:', err.message);
+      }
+    }
+
+    // Example operations (use server endpoints for real app flows)
+    async function distributeIncomeAPI(amount, note = '') {
+      try {
+        const res = await fetch(`${API_BASE}/budget/${USER_ID}/distribute`, {
+          method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ amount, note })
+        });
+        if (!res.ok) throw new Error('Distribution failed');
+        const json = await res.json();
+        // Update local state with returned budgetData if present
+        if (json.budgetData) {
+          const bd = json.budgetData;
+          // map jars
+          state.jars = {
+            necessities: { balance: bd.jars.necessities.balance, percent: bd.jars.necessities.percent },
+            play: { balance: bd.jars.play.balance, percent: bd.jars.play.percent },
+            education: { balance: bd.jars.education.balance, percent: bd.jars.education.percent },
+            savings: { balance: bd.jars.savings.balance, percent: bd.jars.savings.percent },
+            give: { balance: bd.jars.give.balance, percent: bd.jars.give.percent },
+            invest: { balance: bd.jars.invest.balance, percent: bd.jars.invest.percent }
+          };
+          state.transactions = bd.transactions || state.transactions;
+          state.theme = bd.theme || state.theme;
+          await saveState();
+        }
+        console.log('Distributed successfully');
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    // Minimal UI interaction to demonstrate
+    async function demoFlow() {
+      console.log('Initial local state:', state);
+      await fetchBudgetData();
+      console.log('After fetching from server:', state);
+
+      // Example: distribute 100
+      // await distributeIncomeAPI(100, 'Salary');
+    }
+
+    // Initialize demo
+    demoFlow();
+
+    // Expose for console testing
+    window.apiDemo = { fetchBudgetData, saveState, distributeIncomeAPI, state };
+  </script>
+</body>
+</html>
